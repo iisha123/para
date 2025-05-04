@@ -14,24 +14,24 @@ class ProductController extends Controller
 
         // Get the selected category from the request (default to all if not provided)
         $category = $request->get('category', '*');
-    
+
         // Fetch products based on the selected category with pagination
         if ($category === '*') {
             $products = Product::paginate(12); // Increased pagination to show more products
         } else {
             $products = Product::where('category', $category)->paginate(12); // Filter by category and paginate
         }
-    
+
         // Get all available categories for the filter
         $categories = Product::select('category')->distinct()->get()->pluck('category');
-        
+
         $totalProducts = Product::count();
 
-    
+
         // Pass variables to the view
         return view('produits', compact('products', 'categories', 'totalProducts'));
     }
-    
+
     public function update(Request $request, $id)
     {
 
@@ -50,7 +50,7 @@ class ProductController extends Controller
             $path = $request->file('image')->store('products', 'public');
             $product->image = $path;
         }
-        
+
         // Validate the incoming data
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -81,19 +81,7 @@ class ProductController extends Controller
     public function store(Request $request)
     {
 
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'price' => 'required|numeric',
-            'category' => 'nullable|string',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
-        ]);
 
-        if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('products', 'public');
-            $product->image = $path;
-        }
-        
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'description' => 'required|string',
@@ -105,6 +93,8 @@ class ProductController extends Controller
         if ($validator->fails()) {
             return back()->withErrors($validator)->withInput();
         }
+
+        $product = new Product;
 
         // Store the product
         $product->name = $request->name;
